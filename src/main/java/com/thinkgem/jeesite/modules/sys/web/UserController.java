@@ -3,40 +3,30 @@
  */
 package com.thinkgem.jeesite.modules.sys.web;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.ConstraintViolationException;
-
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.thinkgem.jeesite.common.beanvalidator.BeanValidators;
 import com.thinkgem.jeesite.common.config.Global;
 import com.thinkgem.jeesite.common.persistence.Page;
 import com.thinkgem.jeesite.common.utils.DateUtils;
 import com.thinkgem.jeesite.common.utils.StringUtils;
-import com.thinkgem.jeesite.common.utils.excel.ExportExcel;
-import com.thinkgem.jeesite.common.utils.excel.ImportExcel;
 import com.thinkgem.jeesite.common.web.BaseController;
 import com.thinkgem.jeesite.modules.sys.entity.Office;
 import com.thinkgem.jeesite.modules.sys.entity.Role;
 import com.thinkgem.jeesite.modules.sys.entity.User;
 import com.thinkgem.jeesite.modules.sys.service.SystemService;
 import com.thinkgem.jeesite.modules.sys.utils.UserUtils;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 用户Controller
@@ -168,7 +158,7 @@ public class UserController extends BaseController {
 		try {
             String fileName = "用户数据"+DateUtils.getDate("yyyyMMddHHmmss")+".xlsx";
             Page<User> page = systemService.findUser(new Page<User>(request, response, -1), user);
-    		new ExportExcel("用户数据", User.class).setDataList(page.getList()).write(response, fileName).dispose();
+    		//new ExportExcel("用户数据", User.class).setDataList(page.getList()).write(response, fileName).dispose();
     		return null;
 		} catch (Exception e) {
 			addMessage(redirectAttributes, "导出用户失败！失败信息："+e.getMessage());
@@ -193,34 +183,34 @@ public class UserController extends BaseController {
 			int successNum = 0;
 			int failureNum = 0;
 			StringBuilder failureMsg = new StringBuilder();
-			ImportExcel ei = new ImportExcel(file, 1, 0);
-			List<User> list = ei.getDataList(User.class);
-			for (User user : list){
-				try{
-					if ("true".equals(checkLoginName("", user.getLoginName()))){
-						user.setPassword(SystemService.entryptPassword("123456"));
-						BeanValidators.validateWithException(validator, user);
-						systemService.saveUser(user);
-						successNum++;
-					}else{
-						failureMsg.append("<br/>登录名 "+user.getLoginName()+" 已存在; ");
-						failureNum++;
-					}
-				}catch(ConstraintViolationException ex){
-					failureMsg.append("<br/>登录名 "+user.getLoginName()+" 导入失败：");
-					List<String> messageList = BeanValidators.extractPropertyAndMessageAsList(ex, ": ");
-					for (String message : messageList){
-						failureMsg.append(message+"; ");
-						failureNum++;
-					}
-				}catch (Exception ex) {
-					failureMsg.append("<br/>登录名 "+user.getLoginName()+" 导入失败："+ex.getMessage());
-				}
-			}
-			if (failureNum>0){
-				failureMsg.insert(0, "，失败 "+failureNum+" 条用户，导入信息如下：");
-			}
-			addMessage(redirectAttributes, "已成功导入 "+successNum+" 条用户"+failureMsg);
+//			ImportExcel ei = new ImportExcel(file, 1, 0);
+//			List<User> list = ei.getDataList(User.class);
+//			for (User user : list){
+//				try{
+//					if ("true".equals(checkLoginName("", user.getLoginName()))){
+//						user.setPassword(SystemService.entryptPassword("123456"));
+//						BeanValidators.validateWithException(validator, user);
+//						systemService.saveUser(user);
+//						successNum++;
+//					}else{
+//						failureMsg.append("<br/>登录名 "+user.getLoginName()+" 已存在; ");
+//						failureNum++;
+//					}
+//				}catch(ConstraintViolationException ex){
+//					failureMsg.append("<br/>登录名 "+user.getLoginName()+" 导入失败：");
+//					List<String> messageList = BeanValidators.extractPropertyAndMessageAsList(ex, ": ");
+//					for (String message : messageList){
+//						failureMsg.append(message+"; ");
+//						failureNum++;
+//					}
+//				}catch (Exception ex) {
+//					failureMsg.append("<br/>登录名 "+user.getLoginName()+" 导入失败："+ex.getMessage());
+//				}
+//			}
+//			if (failureNum>0){
+//				failureMsg.insert(0, "，失败 "+failureNum+" 条用户，导入信息如下：");
+//			}
+//			addMessage(redirectAttributes, "已成功导入 "+successNum+" 条用户"+failureMsg);
 		} catch (Exception e) {
 			addMessage(redirectAttributes, "导入用户失败！失败信息："+e.getMessage());
 		}
@@ -239,7 +229,7 @@ public class UserController extends BaseController {
 		try {
             String fileName = "用户数据导入模板.xlsx";
     		List<User> list = Lists.newArrayList(); list.add(UserUtils.getUser());
-    		new ExportExcel("用户数据", User.class, 2).setDataList(list).write(response, fileName).dispose();
+    		//new ExportExcel("用户数据", User.class, 2).setDataList(list).write(response, fileName).dispose();
     		return null;
 		} catch (Exception e) {
 			addMessage(redirectAttributes, "导入模板下载失败！失败信息："+e.getMessage());
